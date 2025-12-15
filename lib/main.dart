@@ -38,7 +38,7 @@ class MyApp extends ConsumerWidget {
         
           final vendor = ref.watch(vendorProvider);
 
-          return vendor!=null?MainVendorScreen():MainVendorScreen();
+          return vendor!=null?MainVendorScreen():LoginScreen();
         
        })
     );
