@@ -34,14 +34,14 @@ try {
   );
   
   manageHttpResponse(response: response, context: context, onSuccess: (){
-    showSnackBar(context, "Vendor Account Created");
+    showSnackBar2(context, "Vendor Account Created");
   });
 } catch (e) {
-  showSnackBar(context, '$e');
+  showSnackBar2(context, '$e');
 }
   }
   
-  void showSnackBar(context, String s) {}
+
 
   Future<void> signInVendor({required String email, required String password, required context})async{
     try {
@@ -71,12 +71,12 @@ try {
         await preferences.setString('vendor', vendorJson);
 
 
-          showSnackBar(context, "LoggedIn Successfully");
+          showSnackBar2(context, "LoggedIn Successfully");
           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => MainVendorScreen()),
            (route) => false);
        });
     } catch (e) {
-      showSnackBar(context, '$e');
+      showSnackBar2(context, '$e');
     }
   }
 }
