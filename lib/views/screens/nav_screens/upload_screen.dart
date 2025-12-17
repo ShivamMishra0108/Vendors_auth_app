@@ -2,20 +2,24 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:vendor_app/controller/category_controller.dart';
+import 'package:vendor_app/controller/product_controller.dart';
 import 'package:vendor_app/controller/subCategory_controller.dart';
+import 'package:vendor_app/global_variable.dart';
 import 'package:vendor_app/models/category.dart';
 import 'package:vendor_app/models/subCategory.dart';
+import 'package:vendor_app/provider/vendor_provider.dart';
 
-class UploadScreen extends StatefulWidget {
+class UploadScreen extends ConsumerStatefulWidget {
   const UploadScreen({super.key});
 
   @override
-  State<UploadScreen> createState() => _UploadScreenState();
+  _UploadScreenState createState() => _UploadScreenState();
 }
 
-class _UploadScreenState extends State<UploadScreen> {
+class _UploadScreenState extends ConsumerState<UploadScreen> {
   //Create an instance to pick image
   final ImagePicker picker = ImagePicker();
 
@@ -37,10 +41,15 @@ class _UploadScreenState extends State<UploadScreen> {
 
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
   late Future<List<Category>> futureCategories;
+  final ProductController _productController = ProductController();
   late String name;
   Category? selectedCategory;
   Future<List<Subcategory>>? futureSubCategories;
   Subcategory? selectedSubCategory;
+  String productName = '';
+  int productPrice = 0;
+  int quantity = 0;
+  String description = '';
 
   Future<void> fetchAllCategory() async {
     futureCategories = CategoryController().loadCategories();
@@ -52,8 +61,10 @@ class _UploadScreenState extends State<UploadScreen> {
     fetchAllCategory();
   }
 
-  getSubCategoryByCategory(value){
-    futureSubCategories = SubcategoryController().getSubCategoryByCategory(value.name);
+  getSubCategoryByCategory(value) {
+    futureSubCategories = SubcategoryController().getSubCategoryByCategory(
+      value.name,
+    );
   }
 
   @override
@@ -103,10 +114,11 @@ class _UploadScreenState extends State<UploadScreen> {
                 SizedBox(
                   width: 200,
                   child: TextFormField(
+                    onChanged: (value) => {productName = value},
                     validator: (value) {
-                      if(value!.isEmpty){
+                      if (value!.isEmpty) {
                         return "Enter Product Name";
-                      }else{
+                      } else {
                         return null;
                       }
                     },
@@ -121,10 +133,16 @@ class _UploadScreenState extends State<UploadScreen> {
                 SizedBox(
                   width: 200,
                   child: TextFormField(
-                      validator: (value) {
-                      if(value!.isEmpty){
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        productPrice = int.tryParse(value) ?? 0;
+                      }
+                    },
+                    validator: (value) {
+                      if (value!.isEmpty) {
                         return "Enter Product Price";
-                      }else{
+                      } else {
                         return null;
                       }
                     },
@@ -136,14 +154,20 @@ class _UploadScreenState extends State<UploadScreen> {
                   ),
                 ),
                 SizedBox(height: 10),
-                    
+
                 SizedBox(
                   width: 200,
                   child: TextFormField(
-                      validator: (value) {
-                      if(value!.isEmpty){
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        quantity = int.tryParse(value) ?? 0;
+                      }
+                    },
+                    validator: (value) {
+                      if (value!.isEmpty) {
                         return "Enter Product Quantity";
-                      }else{
+                      } else {
                         return null;
                       }
                     },
@@ -155,14 +179,17 @@ class _UploadScreenState extends State<UploadScreen> {
                   ),
                 ),
                 SizedBox(height: 10),
-                    
+
                 SizedBox(
                   width: 400,
                   child: TextFormField(
-                      validator: (value) {
-                      if(value!.isEmpty){
+                    onChanged: (value) {
+                      description = value;
+                    },
+                    validator: (value) {
+                      if (value!.isEmpty) {
                         return "Enter Product Description";
-                      }else{
+                      } else {
                         return null;
                       }
                     },
@@ -175,9 +202,9 @@ class _UploadScreenState extends State<UploadScreen> {
                     ),
                   ),
                 ),
-                    
-                 Divider(color: Colors.grey.shade900),
-                    
+
+                Divider(color: Colors.grey.shade900),
+
                 FutureBuilder<List<Category>>(
                   future: futureCategories,
                   builder: (context, snapshot) {
@@ -186,7 +213,7 @@ class _UploadScreenState extends State<UploadScreen> {
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Center(child: Text("No categories"));
                     }
-                    
+
                     return DropdownButton<Category>(
                       value: selectedCategory,
                       hint: const Text('Select Category'),
@@ -206,9 +233,9 @@ class _UploadScreenState extends State<UploadScreen> {
                     );
                   },
                 ),
-            
-                SizedBox(height: 10,),
-            
+
+                SizedBox(height: 10),
+
                 FutureBuilder<List<Subcategory>>(
                   future: futureSubCategories,
                   builder: (context, snapshot) {
@@ -217,7 +244,7 @@ class _UploadScreenState extends State<UploadScreen> {
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Center(child: Text("No Sub categories"));
                     }
-                    
+
                     return DropdownButton<Subcategory>(
                       value: selectedSubCategory,
                       hint: const Text('Select Category'),
@@ -231,23 +258,48 @@ class _UploadScreenState extends State<UploadScreen> {
                         setState(() {
                           selectedSubCategory = value;
                         });
-                   
+
                         print(selectedCategory!.name);
                       },
                     );
                   },
                 ),
-            
+
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: InkWell(
-                      onTap: (){
-                        if(_formkey.currentState!.validate()){
-                           print("Uploaded");
-                        }else{
-                          print( "Enter all Fields");
-                        };
-                      },
+                    onTap: () async {
+                      final fullName = ref.read(vendorProvider)?.fullName ?? '';
+                      final vendorId = ref.read(vendorProvider)?.id ?? '';
+
+                      // Add null checks before validation
+                      if (selectedCategory == null ||
+                          selectedSubCategory == null) {
+                        showSnackBar2(
+                          context,
+                          "Please select Category and Subcategory",
+                        );
+                        return;
+                      }
+                      if (_formkey.currentState!.validate() && images.isNotEmpty) {
+                        _productController.uploadProduct(
+                          productName: productName,
+                          productPrice: productPrice,
+                          quantity: quantity,
+                          description: description,
+                          category: selectedCategory!.name,
+                          vendorId: vendorId,
+                          fullName: fullName,
+                          subCategory: selectedSubCategory!.subCategoryName,
+                          pickedImage: images,
+                          context: context,
+                        );
+                        print("Uploaded");
+                      } else {
+                        print("Enter all Fields");
+                      }
+                      ;
+                    },
                     child: Container(
                       height: 50,
                       width: MediaQuery.of(context).size.width,
@@ -255,17 +307,19 @@ class _UploadScreenState extends State<UploadScreen> {
                         color: Colors.blue.shade900,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      
-                      child: Center(child: Text("Upload Product",
-                       style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold
+
+                      child: Center(
+                        child: Text(
+                          "Upload Product",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        ),),
-                               
+                      ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
