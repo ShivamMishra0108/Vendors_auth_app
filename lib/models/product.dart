@@ -62,7 +62,7 @@ class Product {
        vendorId: map['vendorId'] ?? '',
         fullName: map['fullName'] ?? '',
       subCategory: map['subCategory'] ?? '',
-      images:  List<String>.from((map['description'] as List<String>)),
+      images:  List<String>.from((map['images'] as List<String>)),
 
     
     );

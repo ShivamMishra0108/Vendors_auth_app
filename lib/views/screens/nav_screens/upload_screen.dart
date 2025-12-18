@@ -35,7 +35,9 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
     }
     // If image is picked add it in the list and update to the state(UI):
     else {
-      images.add(File(PickedFile.path));
+      setState(() {
+        images.add(File(PickedFile.path));
+      });
     }
   }
 
@@ -46,10 +48,12 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
   Category? selectedCategory;
   Future<List<Subcategory>>? futureSubCategories;
   Subcategory? selectedSubCategory;
-  String productName = '';
-  int productPrice = 0;
-  int quantity = 0;
-  String description = '';
+  late String productName = '';
+  late int productPrice = 0;
+  late int quantity = 0;
+  late String description = '';
+
+  bool isLoading = false;
 
   Future<void> fetchAllCategory() async {
     futureCategories = CategoryController().loadCategories();
@@ -94,18 +98,16 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                         ?
                           // If there is no image (THE LIST IS EMPTY):
                           Center(
-                            child: SizedBox(
-                              width: 40,
-                              height: 40,
-                              child: ElevatedButton(
-                                onPressed: chooseImage,
-                                child: Center(child: Icon(Icons.add, size: 20)),
-                              ),
+                            child: IconButton(
+                              onPressed: () {
+                                chooseImage();
+                              },
+                              icon: Icon(Icons.add),
                             ),
                           )
                         : SizedBox(
-                            height: 50,
-                            width: 40,
+                            height: 40,
+                            width: 50,
                             child: Image.file(images[index - 1]),
                           );
                   },
@@ -114,7 +116,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                 SizedBox(
                   width: 200,
                   child: TextFormField(
-                    onChanged: (value) => {productName = value},
+                    onSaved: (value) => productName = value!.trim(),
                     validator: (value) {
                       if (value!.isEmpty) {
                         return "Enter Product Name";
@@ -135,9 +137,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                   child: TextFormField(
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        productPrice = int.tryParse(value) ?? 0;
-                      }
+                      productPrice = int.tryParse(value) ?? 0;
                     },
                     validator: (value) {
                       if (value!.isEmpty) {
@@ -160,10 +160,9 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                   child: TextFormField(
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        quantity = int.tryParse(value) ?? 0;
-                      }
+                      quantity = int.tryParse(value) ?? 0;
                     },
+
                     validator: (value) {
                       if (value!.isEmpty) {
                         return "Enter Product Quantity";
@@ -183,9 +182,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                 SizedBox(
                   width: 400,
                   child: TextFormField(
-                    onChanged: (value) {
-                      description = value;
-                    },
+                    onSaved: (value) => description = value!,
                     validator: (value) {
                       if (value!.isEmpty) {
                         return "Enter Product Description";
@@ -259,7 +256,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                           selectedSubCategory = value;
                         });
 
-                        print(selectedCategory!.name);
+                        print(selectedSubCategory!.subCategoryName);
                       },
                     );
                   },
@@ -269,10 +266,9 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: InkWell(
                     onTap: () async {
-                      final fullName = ref.read(vendorProvider)?.fullName ?? '';
-                      final vendorId = ref.read(vendorProvider)?.id ?? '';
+                      final fullName = ref.read(vendorProvider)!.fullName;
+                      final vendorId = ref.read(vendorProvider)!.id;
 
-                      // Add null checks before validation
                       if (selectedCategory == null ||
                           selectedSubCategory == null) {
                         showSnackBar2(
@@ -281,19 +277,44 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                         );
                         return;
                       }
-                      if (_formkey.currentState!.validate() && images.isNotEmpty) {
-                        _productController.uploadProduct(
-                          productName: productName,
-                          productPrice: productPrice,
-                          quantity: quantity,
-                          description: description,
-                          category: selectedCategory!.name,
-                          vendorId: vendorId,
-                          fullName: fullName,
-                          subCategory: selectedSubCategory!.subCategoryName,
-                          pickedImage: images,
-                          context: context,
+                      if (productPrice <= 0 || quantity <= 0) {
+                        showSnackBar2(
+                          context,
+                          "Price and quantity must be greater than zero",
                         );
+                        return;
+                      }
+
+                      if (_formkey.currentState!.validate() &&
+                          images.isNotEmpty) {
+                        _formkey.currentState!.save();
+                        setState(() {
+                          isLoading = true;
+                        });
+
+                        await _productController
+                            .uploadProduct(
+                              productName: productName,
+                              productPrice: productPrice,
+                              quantity: quantity,
+                              description: description,
+                              category: selectedCategory!.name,
+                              vendorId: vendorId,
+                              fullName: fullName,
+                              subCategory: selectedSubCategory!.subCategoryName,
+                              pickedImages: images,
+                              context: context,
+                            )
+                            .whenComplete(() {});
+                        setState(() {
+                          isLoading = false;
+                        });
+                        _formkey.currentState!.reset();
+
+                        selectedCategory = null;
+                        selectedSubCategory = null;
+                        images.clear();
+
                         print("Uploaded");
                       } else {
                         print("Enter all Fields");
@@ -309,13 +330,15 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                       ),
 
                       child: Center(
-                        child: Text(
-                          "Upload Product",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: isLoading
+                            ? CircularProgressIndicator(color: Colors.white)
+                            : Text(
+                                "Upload Product",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                   ),
