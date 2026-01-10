@@ -1,5 +1,76 @@
-import 'dart:io';
+// import 'dart:io';
 
+// import 'package:cloudinary_public/cloudinary_public.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:vendor_app/global_variable.dart';
+// import 'package:vendor_app/models/product.dart';
+// import 'package:vendor_app/services/manage_http_response.dart';
+
+// class ProductController {
+//   Future<void> uploadProduct({
+//     required String productName,
+//     required int productPrice,
+//     required int quantity,
+//     required String description,
+//     required String category,
+//     required String vendorId,
+//     required String fullName,
+//     required String subCategory,
+//     required List<File>? pickedImages,
+//     required context,
+//   }) async {
+//     if (pickedImages != null) {
+//       final cloudinary = CloudinaryPublic('dbum12hl4', "oeqnx1ce");
+//       List<String> images = [];
+
+//       for (var i = 0; i < pickedImages.length; i++) {
+//         CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
+//           CloudinaryFile.fromFile(pickedImages[i].path, folder: productName),
+//         );
+
+//         images.add(cloudinaryResponse.secureUrl);
+//       }
+
+//       if (category.isNotEmpty && subCategory.isNotEmpty) {
+//         final Product product = Product(
+//           id: '',
+//           productName: productName,
+//           productPrice: productPrice,
+//           quantity: quantity,
+//           description: description,
+//           category: category,
+//           vendorId: vendorId,
+//           fullName: fullName,
+//           subCategory: subCategory,
+//           images: images,
+//         );
+
+//         http.Response response = await http.post(Uri.parse("$uri/api/upload-products"),
+//         body: product.toJson(),
+//          headers: <String, String>{
+//           "Content-Type": "application/json; charset=UTF-8",
+//          },
+//         );
+
+//         manageHttpResponse(
+//           response: response, context: context, onSuccess: (){
+//             showSnackBar2(context, "Product Uploaded");
+//           }
+//         );
+
+//       }else{
+//         showSnackBar2(context, "Select Category");
+//       }
+      
+//     } else {
+//       showSnackBar2(context, "Select Images");
+//     }
+//   }
+// }
+
+
+import 'dart:io';
+import 'dart:convert';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:http/http.dart' as http;
 import 'package:vendor_app/global_variable.dart';
@@ -19,54 +90,63 @@ class ProductController {
     required List<File>? pickedImages,
     required context,
   }) async {
-    if (pickedImages != null) {
-      final cloudinary = CloudinaryPublic('dbum12hl4', "oeqnx1ce");
-      List<String> images = [];
+    // Check if images are selected
+    if (pickedImages == null || pickedImages.isEmpty) {
+      showSnackBar2(context, "Select at least one image");
+      return;
+    }
 
-      for (var i = 0; i < pickedImages.length; i++) {
-        CloudinaryResponse cloudinaryResponse = await cloudinary.uploadFile(
-          CloudinaryFile.fromFile(pickedImages[i].path, folder: productName),
+    try {
+      // Initialize Cloudinary
+      final cloudinary = CloudinaryPublic('dbum12hl4', "oeqnx1ce", cache: false);
+      List<String> uploadedImageUrls = [];
+
+      // Upload all images to Cloudinary
+      for (File file in pickedImages) {
+        CloudinaryResponse response = await cloudinary.uploadFile(
+          CloudinaryFile.fromFile(file.path, folder: productName),
         );
-
-        images.add(cloudinaryResponse.secureUrl);
+        uploadedImageUrls.add(response.secureUrl);
       }
 
-      if (category.isNotEmpty && subCategory.isNotEmpty) {
-        final Product product = Product(
-          id: '',
-          productName: productName,
-          productPrice: productPrice,
-          quantity: quantity,
-          description: description,
-          category: category,
-          vendorId: vendorId,
-          fullName: fullName,
-          subCategory: subCategory,
-          images: images,
-        );
+      // Create Product object
+      final Product product = Product(
+        id: '',
+        productName: productName,
+        productPrice: productPrice,
+        quantity: quantity,
+        description: description,
+        category: category,
+        vendorId: vendorId,
+        fullName: fullName,
+        subCategory: subCategory,
+        images: uploadedImageUrls,
+      );
 
-        http.Response response = await http.post(Uri.parse("$uri/api/upload-products"),
-        body: product.toJson(),
-         headers: <String, String>{
+      // Send HTTP POST request
+      final response = await http.post(
+        Uri.parse("$uri/api/upload-products"),
+        headers: <String, String>{
           "Content-Type": "application/json; charset=UTF-8",
-         },
-        );
+        },
+        body: jsonEncode(product.toJson()), // <-- proper JSON
+      );
 
-        manageHttpResponse(
-          response: response, context: context, onSuccess: (){
-            showSnackBar2(context, "Product Uploaded");
-          }
-        );
-
-      }else{
-        showSnackBar2(context, "Select Category");
-      }
-      
-    } else {
-      showSnackBar2(context, "Select Images");
+      // Handle backend response
+      manageHttpResponse(
+        response: response,
+        context: context,
+        onSuccess: () {
+          showSnackBar2(context, "Product Uploaded Successfully");
+        },
+      );
+    } catch (e) {
+      print("Error uploading product: $e");
+      showSnackBar2(context, "Failed to upload product");
     }
   }
 }
+
 
 // import 'dart:convert';
 // import 'dart:io';
