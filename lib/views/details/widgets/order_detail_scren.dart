@@ -32,7 +32,7 @@ class OrderDetailScreen extends StatelessWidget {
                   height: 130,
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 217, 229, 238),
+                    color: Colors.grey.shade200,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
@@ -299,14 +299,13 @@ class OrderDetailScreen extends StatelessWidget {
                         ),
                       ),
 
-                      Text(
-                        " Null {CheckoutScreen.selectedPayment}",
-                        style: TextStyle(fontSize: 18),
-                      ),
-
+                      // Text(
+                      //   "${CheckoutScreen.selectedPayment}",
+                      //   style: TextStyle(fontSize: 18),
+                      // ),
                       SizedBox(height: 10),
                       Text(
-                        "Get Invoice",
+                        "Upload Invoice",
                         style: TextStyle(color: Colors.blue, fontSize: 16),
                       ),
                     ],
@@ -320,8 +319,9 @@ class OrderDetailScreen extends StatelessWidget {
 
               Container(
                 margin: const EdgeInsets.only(bottom: 12),
+                width: 250,
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 210, 224, 235),
+                  color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Padding(
@@ -330,41 +330,14 @@ class OrderDetailScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Text(
-                        "Add Review:",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      TextButton(onPressed: (){}, child: Text("Mark as Delivered?",style: TextStyle(
+                        color: Colors.green.shade600
+                      ),),
                       ),
-                      SizedBox(height: 10),
-                      SizedBox(
-                        height: 44,
-                        width: 280,
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: "Enter text",
-                            hintStyle: TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                            ),
-
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 16,
-                            ),
-
-                            prefixIcon: Image.asset("assets/icons/search.png"),
-                            suffixIcon: Image.asset("assets/icons/cam.png"),
-                            fillColor: Colors.grey.shade200,
-                            filled: true,
-                            focusColor: Colors.black,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 7),
-                      Divider(),
-                      SizedBox(height: 10),
+                      TextButton(onPressed: (){}, child: Text("Cancel Order",style: TextStyle(
+                        color: Colors.pink
+                      ),),)
+                      
                     ],
                   ),
                 ),

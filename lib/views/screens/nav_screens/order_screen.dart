@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vendor_app/controller/order_controller.dart';
@@ -22,15 +21,15 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
   }
 
   Future<void> fetchOrders() async {
-    final user = ref.read(vendorProvider);
+    final vendor = ref.read(vendorProvider);
 
-    print("FLUTTER vendorId: ${user?.id}");
+    print("FLUTTER vendorId: ${vendor?.id}");
 
-    if (user != null) {
+    if (vendor != null) {
       OrderController orderController = OrderController();
 
       try {
-        final orders = await orderController.loadOrders(vendorId: user.id);
+        final orders = await orderController.loadOrders(vendorId: vendor.id);
         ref.read(orderProvider.notifier).setOrders(orders);
       } catch (e) {
         print("Error fetching orders $e ");
@@ -199,8 +198,9 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
                                   Text(order.category),
                         
                                   Text(
-                                    "${order.productPrice}",
-                                    style: TextStyle(color: Colors.green),
+                                    "₹${order.productPrice}",
+                                    style: TextStyle(color: Colors.green, fontSize: 16),
+                                    
                                   ),
                                 ],
                               ),
