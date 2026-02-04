@@ -61,7 +61,7 @@ class OrderController {
           "Content-Type": "application/json; charset=UTF-8",
         },
 
-        body: jsonEncode({"delivered": true}),
+        body: jsonEncode({"delivered": true, "processing":false}),
       );
 
       manageHttpResponse(response: response, context: context, onSuccess: (){
@@ -84,7 +84,7 @@ class OrderController {
           "Content-Type": "application/json; charset=UTF-8",
         },
 
-        body: jsonEncode({"processing": false}),
+        body: jsonEncode({"processing": false, "deliverd":false}),
       );
 
       manageHttpResponse(response: response, context: context, onSuccess: (){
