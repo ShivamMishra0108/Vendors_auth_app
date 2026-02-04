@@ -5,7 +5,6 @@ import 'package:vendor_app/models/order.dart';
 import 'package:vendor_app/services/manage_http_response.dart';
 
 class OrderController {
- 
   Future<List<Order>> loadOrders({required String vendorId}) async {
     try {
       http.Response response = await http.get(
@@ -48,6 +47,51 @@ class OrderController {
       );
     } catch (e) {
       print("Error deleting order: $e");
+    }
+  }
+
+  Future<void> updateDeliveryStatus({
+    required String id,
+    required context,
+  }) async {
+    try {
+      http.Response response =  await http.patch(
+        Uri.parse('$uri/api/orders/$id/delivered'),
+        headers: <String, String>{
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+
+        body: jsonEncode({"delivered": true}),
+      );
+
+      manageHttpResponse(response: response, context: context, onSuccess: (){
+        showSnackBar2(context, "Order Updated");
+      });
+    } catch (e) {
+      showSnackBar2(context, e.toString());
+    }
+  }
+
+
+  Future<void> cancelOrder({
+    required String id,
+    required context,
+  }) async {
+    try {
+      http.Response response =  await http.patch(
+        Uri.parse('$uri/api/orders/$id/processing'),
+        headers: <String, String>{
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+
+        body: jsonEncode({"processing": false}),
+      );
+
+      manageHttpResponse(response: response, context: context, onSuccess: (){
+        showSnackBar2(context, "Order Updated");
+      });
+    } catch (e) {
+      showSnackBar2(context, e.toString());
     }
   }
 }

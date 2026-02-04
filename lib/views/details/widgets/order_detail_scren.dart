@@ -1,19 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vendor_app/controller/order_controller.dart';
 import 'package:vendor_app/models/order.dart';
+import 'package:vendor_app/provider/order_provider.dart';
 
-class OrderDetailScreen extends StatelessWidget {
+class OrderDetailScreen extends ConsumerStatefulWidget {
   final Order order;
 
-  const OrderDetailScreen({super.key, required this.order});
+  OrderDetailScreen({super.key, required this.order});
+
+  @override
+  _OrderDetailScreenState createState() => _OrderDetailScreenState();
+}
+
+class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
+  final OrderController orderController = OrderController();
 
   @override
   Widget build(BuildContext context) {
+    // Watch the list of orders to trigger the automatic UI rebuilds
+    final orders = ref.watch(orderProvider);
+
+    // Find the updated order in the list
+    final updatedOrder = orders.firstWhere(
+      (o) => o.id == widget.order.id,
+      orElse: () => widget.order,
+    );
+
     return Scaffold(
       appBar: AppBar(
         // backgroundColor:  Color.fromARGB(255, 65, 194, 166),
         title: Text(
-          "${order.productName}",
+          "${widget.order.productName}",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
       ),
@@ -41,7 +60,7 @@ class OrderDetailScreen extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Image.network(
-                          order.image,
+                          widget.order.image,
                           height: 60,
                           width: 60,
                         ),
@@ -53,14 +72,14 @@ class OrderDetailScreen extends StatelessWidget {
                           children: [
                             SizedBox(height: 10),
                             Text(
-                              order.productName,
+                              widget.order.productName,
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
 
-                            Text(order.category),
+                            Text(widget.order.category),
 
                             Text(
-                              "₹${order.productPrice}",
+                              "₹${widget.order.productPrice}",
                               style: TextStyle(
                                 color: Color.fromARGB(255, 65, 194, 166),
                               ),
@@ -77,27 +96,50 @@ class OrderDetailScreen extends StatelessWidget {
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                height: 14,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(2),
-                                  color: Color.fromARGB(255, 65, 194, 166),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    order.processing
-                                        ? "Processing"
-                                        : "Order Placed",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
+
+                              child: updatedOrder.processing
+                                  ? Container(
+                                      height: 14,
+                                      width: 60,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Color.fromARGB(
+                                          255,
+                                          65,
+                                          194,
+                                          166,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          "Processing",
+
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      height: 14,
+                                      width: 60,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.red,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          " Canceled",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                              ),
                             ),
-                            !order.delivered
+                            updatedOrder.delivered
                                 ? Container(
                                     height: 14,
                                     width: 60,
@@ -199,7 +241,7 @@ class OrderDetailScreen extends StatelessWidget {
                                         child: SizedBox(
                                           width: 114,
                                           child: Text(
-                                            "${order.locality}, ${order.city}, ${order.state}",
+                                            "${widget.order.locality}, ${widget.order.city}, ${widget.order.state}",
                                             style: const TextStyle(
                                               fontSize: 14,
                                             ),
@@ -209,7 +251,7 @@ class OrderDetailScreen extends StatelessWidget {
                                       Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          "To: ${order.fullName}",
+                                          "To: ${widget.order.fullName}",
                                           style: GoogleFonts.lato(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
@@ -221,7 +263,7 @@ class OrderDetailScreen extends StatelessWidget {
                                       Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          "Order ID: ${order.id}",
+                                          "Order ID: ${widget.order.id}",
                                           style: GoogleFonts.lato(
                                             color: Colors.black,
                                             fontWeight: FontWeight.w500,
@@ -330,14 +372,59 @@ class OrderDetailScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      TextButton(onPressed: (){}, child: Text("Mark as Delivered?",style: TextStyle(
-                        color: Colors.green.shade600
-                      ),),
+                      TextButton(
+                        onPressed: updatedOrder.processing == false || updatedOrder.delivered
+                            ? null
+                            : () async {
+                                await orderController
+                                  .updateDeliveryStatus(
+                                    id: widget.order.id,
+                                    context: context,
+                                  )
+                                  .whenComplete(() {
+                                    ref
+                                        .read(orderProvider.notifier)
+                                        .updateOrderState(
+                                          widget.order.id,
+                                          delivered: true,
+                                        );
+                                  });
+                              },
+                        child: Text(
+                          updatedOrder.delivered == true
+                              ? "Delivered"
+                              : "Mark as Delivered?",
+                          style: TextStyle(color: updatedOrder.processing? Colors.green.shade600: Colors.grey),
+                        ),
                       ),
-                      TextButton(onPressed: (){}, child: Text("Cancel Order",style: TextStyle(
-                        color: Colors.pink
-                      ),),)
-                      
+
+                      TextButton(
+                        onPressed: updatedOrder.delivered || updatedOrder.processing==false
+                            ? null
+                            : () async {
+                                await orderController
+                                    .cancelOrder(
+                                      id: widget.order.id,
+                                      context: context,
+                                    )
+                                    .whenComplete(() {
+                                      ref
+                                          .read(orderProvider.notifier)
+                                          .updateOrderState(
+                                            widget.order.id,
+                                            processing: false,
+                                          );
+                                    });
+                              },
+                        child: Text(
+                          updatedOrder.processing ? "Cancel Order" : "Canceled",
+                          style: TextStyle(
+                            color: updatedOrder.delivered
+                                ? Colors.grey
+                                : Colors.pink,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

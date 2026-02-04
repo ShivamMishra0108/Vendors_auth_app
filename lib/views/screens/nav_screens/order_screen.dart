@@ -37,13 +37,12 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
     }
   }
 
-  Future<void> _deleteOrder( String id, )async{
+  Future<void> _deleteOrder(String id) async {
     final OrderController _orderController = OrderController();
 
     try {
       await _orderController.deleteOrders(id: id, context: context);
       fetchOrders();
-
     } catch (e) {
       print("Error deleting order: $e");
     }
@@ -129,26 +128,27 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
                 left: 160,
                 top: 51,
                 child: SizedBox(
-              height: 38,
-              width: 180,
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "Search Your Order",
-                  hintStyle: TextStyle(color: Colors.black, fontSize: 13),
-                  
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 16,
-                  ),
+                  height: 38,
+                  width: 180,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: "Search Your Order",
+                      hintStyle: TextStyle(color: Colors.black, fontSize: 13),
 
-                  prefixIcon: Image.asset("assets/icons/search.png"),
-                  
-                  fillColor: Colors.grey.shade200,
-                  filled: true,
-                  focusColor: Colors.black,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 16,
+                      ),
+
+                      prefixIcon: Image.asset("assets/icons/search.png"),
+
+                      fillColor: Colors.grey.shade200,
+                      filled: true,
+                      focusColor: Colors.black,
+                    ),
+                  ),
                 ),
               ),
-            ),)
             ],
           ),
         ),
@@ -164,9 +164,14 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
                     ListTile(
                       title: InkWell(
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context){
-                            return OrderDetailScreen(order: order);
-                          }));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return OrderDetailScreen(order: order);
+                              },
+                            ),
+                          );
                         },
                         child: Container(
                           height: 100,
@@ -188,49 +193,73 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
                               ),
                               SizedBox(width: 15),
                               Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   Text(
                                     order.productName,
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                        
+
                                   Text(order.category),
-                        
+
                                   Text(
                                     "₹${order.productPrice}",
-                                    style: TextStyle(color: Colors.green, fontSize: 16),
-                                    
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ],
                               ),
                               SizedBox(width: 12),
-                        
+
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Column(
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        height: 14,
-                                        width: 60,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(2),
-                                          color: Colors.blue,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            order.processing
-                                                ? "Processing"
-                                                : "Order Placed",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
+                                      child: order.processing
+                                          ? Container(
+                                              height: 14,
+                                              width: 60,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(2),
+                                                color: Colors.blue,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  "Processing",
+
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : Container(
+                                              height: 14,
+                                              width: 60,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(2),
+                                                color: Colors.red,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  "Canceled",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                                      ),
                                     ),
                                     order.delivered
                                         ? Text(
@@ -247,7 +276,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
                                               fontSize: 13,
                                             ),
                                           ),
-                        
+
                                     InkWell(
                                       onTap: () {
                                         _deleteOrder(order.id);
