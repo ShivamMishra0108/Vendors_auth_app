@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:vendor_app/global_variable.dart';
 import 'package:vendor_app/models/order.dart';
@@ -50,48 +51,87 @@ class OrderController {
     }
   }
 
-  Future<void> updateDeliveryStatus({
+  // Future<void> updateDeliveryStatus({
+  //   required String id,
+  //   required context,
+  // }) async {
+  //   try {
+  //     http.Response response =  await http.patch(
+  //       Uri.parse('$uri/api/orders/$id/delivered'),
+  //       headers: <String, String>{
+  //         "Content-Type": "application/json; charset=UTF-8",
+  //       },
+
+  //       body: jsonEncode({"delivered": true, "processing":false}),
+  //     );
+
+  //     manageHttpResponse(response: response, context: context, onSuccess: (){
+  //       showSnackBar2(context, "Order Updated");
+  //     });
+  //   } catch (e) {
+  //     showSnackBar2(context, e.toString());
+  //   }
+  // }
+
+  Future<bool> updateDeliveryStatus({
     required String id,
-    required context,
+    required BuildContext context,
   }) async {
     try {
-      http.Response response =  await http.patch(
+      final response = await http.patch(
         Uri.parse('$uri/api/orders/$id/delivered'),
-        headers: <String, String>{
-          "Content-Type": "application/json; charset=UTF-8",
-        },
-
-        body: jsonEncode({"delivered": true, "processing":false}),
+        headers: {"Content-Type": "application/json"},
       );
 
-      manageHttpResponse(response: response, context: context, onSuccess: (){
-        showSnackBar2(context, "Order Updated");
-      });
+      return response.statusCode == 200;
     } catch (e) {
       showSnackBar2(context, e.toString());
+      return false;
     }
   }
 
+  // Future<void> cancelOrder({required String id, required context}) async {
+  //   try {
+  //     http.Response response = await http.patch(
+  //       Uri.parse('$uri/api/orders/$id/processing'),
+  //       headers: <String, String>{
+  //         "Content-Type": "application/json; charset=UTF-8",
+  //       },
 
-  Future<void> cancelOrder({
-    required String id,
-    required context,
-  }) async {
-    try {
-      http.Response response =  await http.patch(
-        Uri.parse('$uri/api/orders/$id/processing'),
-        headers: <String, String>{
-          "Content-Type": "application/json; charset=UTF-8",
-        },
+  //       body: jsonEncode({"processing": false, "delivered": false}),
+  //     );
 
-        body: jsonEncode({"processing": false, "deliverd":false}),
-      );
+  //     manageHttpResponse(
+  //       response: response,
+  //       context: context,
+  //       onSuccess: () {
+  //         showSnackBar2(context, "Order Updated");
+  //       },
+  //     );
+  //   } catch (e) {
+  //     showSnackBar2(context, e.toString());
+  //   }
+  // }
 
-      manageHttpResponse(response: response, context: context, onSuccess: (){
-        showSnackBar2(context, "Order Updated");
-      });
-    } catch (e) {
-      showSnackBar2(context, e.toString());
-    }
+
+
+  Future<bool> cancelOrder({
+  required String id,
+  required BuildContext context,
+}) async {
+  try {
+    final response = await http.patch(
+      Uri.parse('$uri/api/orders/$id/processing'),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+
+    return response.statusCode == 200;
+  } catch (e) {
+    showSnackBar2(context, e.toString());
+    return false;
   }
+}
+
 }

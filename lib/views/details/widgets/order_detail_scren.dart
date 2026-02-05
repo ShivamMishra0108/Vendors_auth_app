@@ -373,48 +373,58 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       TextButton(
-                        onPressed: updatedOrder.processing == false || updatedOrder.delivered
+                        onPressed:
+                            updatedOrder.processing == false ||
+                                updatedOrder.delivered
                             ? null
                             : () async {
-                                await orderController
-                                  .updateDeliveryStatus(
-                                    id: widget.order.id,
-                                    context: context,
-                                  )
-                                  .whenComplete(() {
-                                    ref
-                                        .read(orderProvider.notifier)
-                                        .updateOrderState(
-                                          widget.order.id,
-                                          delivered: true,
-                                        );
-                                  });
+                                final success = await orderController
+                                    .updateDeliveryStatus(
+                                      id: widget.order.id,
+                                      context: context,
+                                    );
+                                if (success) {
+                                  ref
+                                      .read(orderProvider.notifier)
+                                      .updateOrderState(
+                                        widget.order.id,
+                                        delivered: true,
+                                      );
+                                }
+                                ;
                               },
                         child: Text(
                           updatedOrder.delivered == true
                               ? "Delivered"
                               : "Mark as Delivered?",
-                          style: TextStyle(color: updatedOrder.processing? Colors.green.shade600: Colors.grey),
+                          style: TextStyle(
+                            color: updatedOrder.processing
+                                ? Colors.green.shade600
+                                : Colors.grey,
+                          ),
                         ),
                       ),
 
                       TextButton(
-                        onPressed: updatedOrder.delivered || updatedOrder.processing==false
+                        onPressed:
+                            updatedOrder.delivered ||
+                                updatedOrder.processing == false
                             ? null
                             : () async {
-                                await orderController
+                                final success = await orderController
                                     .cancelOrder(
                                       id: widget.order.id,
                                       context: context,
-                                    )
-                                    .whenComplete(() {
-                                      ref
-                                          .read(orderProvider.notifier)
-                                          .updateOrderState(
-                                            widget.order.id,
-                                            processing: false,
-                                          );
-                                    });
+                                    );
+                                if (success) {
+                                  ref
+                                      .read(orderProvider.notifier)
+                                      .updateOrderState(
+                                        widget.order.id,
+                                        processing: false,
+                                      );
+                                }
+                                ;
                               },
                         child: Text(
                           updatedOrder.processing ? "Cancel Order" : "Canceled",
