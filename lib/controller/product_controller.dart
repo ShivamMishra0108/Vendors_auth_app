@@ -73,6 +73,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vendor_app/global_variable.dart';
 import 'package:vendor_app/models/product.dart';
 import 'package:vendor_app/services/manage_http_response.dart';
@@ -90,6 +91,8 @@ class ProductController {
     required List<File>? pickedImages,
     required context,
   }) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? token = preferences.getString('auth_token');
     // Check if images are selected
     if (pickedImages == null || pickedImages.isEmpty) {
       showSnackBar2(context, "Select at least one image");
@@ -128,6 +131,7 @@ class ProductController {
         Uri.parse("$uri/api/upload-products"),
         headers: <String, String>{
           "Content-Type": "application/json; charset=UTF-8",
+          'x-auth-token':token!,
         },
         body: jsonEncode(product.toJson()), // <-- proper JSON
       );

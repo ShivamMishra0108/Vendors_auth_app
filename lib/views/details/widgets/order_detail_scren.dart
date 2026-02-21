@@ -118,7 +118,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                                             color: Colors.white,
                                             fontSize: 10,
                                           ),
-                                        ),
+                                        ),                    
                                       ),
                                     )
                                   : Container(
