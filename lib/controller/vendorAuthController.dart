@@ -58,7 +58,7 @@ try {
         //Extarct the auth token from the response body:
         String token = jsonDecode(response.body)['token'];
 
-        //Store the auth tken in Shared Preferences:
+        //Store the auth token in Shared Preferences:
         await preferences.setString('auth_token',token);
 
         // Extract the user data fomr backend as json:

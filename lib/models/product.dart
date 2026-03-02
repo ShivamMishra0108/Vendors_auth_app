@@ -85,6 +85,7 @@ class Product {
   final String subCategory;
   final List<String> images;
 
+
   Product({
     required this.id,
     required this.productName,

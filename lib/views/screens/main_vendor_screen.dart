@@ -5,6 +5,7 @@ import 'package:vendor_app/views/screens/nav_screens/edit_Screen.dart';
 import 'package:vendor_app/views/screens/nav_screens/order_screen.dart';
 import 'package:vendor_app/views/screens/nav_screens/profile_screen.dart';
 import 'package:vendor_app/views/screens/nav_screens/upload_screen.dart';
+import 'package:vendor_app/views/screens/nav_screens/upload_screen2.dart';
 
 class MainVendorScreen extends StatefulWidget {
   const MainVendorScreen({super.key});
